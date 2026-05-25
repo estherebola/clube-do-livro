@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube do Livro — Ranking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8; --ink: #1A1614; --rust: #B5451B;
+    --gold: #C8943A; --sage: #4A6741; --paper: #EDE8DC;
+    --muted: #7A7269; --border: #D4CCBC;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
+
+  header {
+    background: var(--ink); color: var(--cream);
+    padding: 2.5rem 2rem 1.5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  header::before { content:''; position:absolute; top:-60px; left:-60px; width:220px; height:220px; border:1px solid rgba(200,148,58,0.2); border-radius:50%; }
+  header::after  { content:''; position:absolute; bottom:-80px; right:-40px; width:280px; height:280px; border:1px solid rgba(200,148,58,0.15); border-radius:50%; }
+  .eyebrow { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
+  header h1 { font-family:'Playfair Display',serif; font-size:clamp(2rem,5vw,3.2rem); font-weight:700; margin-bottom:6px; }
+  .header-sub { font-size:14px; color:rgba(245,240,232,0.55); font-weight:300; margin-bottom:1.2rem; }
+  .period-badge { display:inline-block; background:var(--rust); color:var(--cream); font-size:12px; letter-spacing:1.5px; text-transform:uppercase; padding:5px 16px; border-radius:2px; font-weight:500; }
+
+  .cta-banner { background:var(--gold); padding:1rem 1.5rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+  .cta-left { display:flex; align-items:center; gap:12px; }
+  .cta-icon { font-size:1.8rem; flex-shrink:0; }
+  .cta-title { font-size:15px; font-weight:500; color:var(--ink); }
+  .cta-desc { font-size:13px; color:rgba(26,22,20,0.65); margin-top:2px; }
+  .cta-btn { display:inline-flex; align-items:center; gap:8px; background:var(--ink); color:var(--cream); padding:10px 22px; font-size:14px; font-weight:500; font-family:'DM Sans',sans-serif; text-decoration:none; border-radius:2px; white-space:nowrap; transition:opacity .15s; flex-shrink:0; }
+  .cta-btn:hover { opacity:.85; }
+
+  .container { max-width:860px; margin:0 auto; padding:2rem 1.5rem; }
+
+  .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:2.5rem; }
+  .stat-card { background:var(--paper); border:1px solid var(--border); padding:1.2rem 1rem; text-align:center; }
+  .stat-value { font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; color:var(--rust); line-height:1; margin-bottom:4px; }
+  .stat-label { font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); }
+
+  .section-header { display:flex; align-items:baseline; gap:12px; margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:8px; }
+  .section-title { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; }
+  .section-hint { font-size:12px; color:var(--muted); }
+
+  .period-tabs { display:flex; margin-bottom:1.5rem; border:1px solid var(--border); overflow:hidden; width:fit-content; flex-wrap:wrap; }
+  .period-tab { padding:8px 18px; font-size:13px; font-family:'DM Sans',sans-serif; cursor:pointer; background:transparent; color:var(--muted); border:none; border-right:1px solid var(--border); transition:all .15s; }
+  .period-tab:last-child { border-right:none; }
+  .period-tab.active { background:var(--ink); color:var(--cream); font-weight:500; }
+  .period-tab:hover:not(.active) { background:var(--paper); }
+
+  .anual-banner { background:var(--ink); color:var(--cream); padding:1rem 1.25rem; display:flex; align-items:center; gap:14px; margin-bottom:2rem; }
+  .anual-icon { font-size:1.8rem; }
+  .anual-text { font-size:13px; line-height:1.6; color:rgba(245,240,232,0.75); }
+  .anual-text strong { color:var(--gold); font-weight:500; }
+
+  .podium { display:flex; align-items:flex-end; justify-content:center; gap:12px; margin-bottom:2.5rem; padding-top:1.5rem; }
+  .podium-item { display:flex; flex-direction:column; align-items:center; gap:10px; cursor:pointer; }
+  .podium-item:hover .podium-avatar { transform:scale(1.08); }
+  .podium-avatar { border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-weight:700; flex-shrink:0; color:white; transition:transform .2s; }
+  .podium-name { font-size:13px; font-weight:500; text-align:center; max-width:90px; line-height:1.2; }
+  .podium-pts { font-size:12px; color:var(--muted); }
+  .podium-block { width:90px; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:700; color:white; }
+  .p1 .podium-avatar { background:var(--gold); width:68px; height:68px; font-size:22px; }
+  .p1 .podium-block { height:100px; background:var(--gold); }
+  .p2 .podium-avatar { background:var(--ink); width:56px; height:56px; font-size:18px; }
+  .p2 .podium-block { height:72px; background:#555; }
+  .p3 .podium-avatar { background:var(--rust); width:56px; height:56px; font-size:18px; }
+  .p3 .podium-block { height:52px; background:#9B6B4E; }
+
+  .ranking-list { margin-bottom:2.5rem; }
+  .ranking-row { display:flex; align-items:center; gap:14px; padding:14px 8px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .15s; border-radius:2px; animation:fadeIn .4s ease both; }
+  .ranking-row:hover { background:var(--paper); }
+  .ranking-row:last-child { border-bottom:none; }
+  .click-hint { font-size:11px; color:var(--muted); opacity:0; transition:opacity .15s; white-space:nowrap; }
+  .ranking-row:hover .click-hint { opacity:1; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  .rank-pos { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; color:var(--muted); min-width:32px; text-align:center; }
+  .rank-avatar { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:500; flex-shrink:0; color:white; }
+  .rank-name-wrap { flex:1; }
+  .rank-name { font-size:15px; font-weight:500; }
+  .rank-actions-count { font-size:12px; color:var(--muted); margin-top:1px; }
+  .rank-bar-wrap { width:120px; }
+  .rank-bar-bg { height:4px; background:var(--border); border-radius:2px; }
+  .rank-bar-fill { height:4px; background:var(--rust); border-radius:2px; }
+  .rank-pts { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:var(--rust); min-width:60px; text-align:right; }
+  .rank-pts span { font-size:11px; font-family:'DM Sans',sans-serif; font-weight:400; color:var(--muted); }
+
+  /* MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(26,22,20,.6); display:flex; align-items:flex-end; justify-content:center; z-index:100; opacity:0; transition:opacity .25s; pointer-events:none; }
+  .modal-overlay.open { opacity:1; pointer-events:all; }
+  .modal { background:var(--cream); width:100%; max-width:600px; max-height:82vh; overflow-y:auto; border-radius:6px 6px 0 0; transform:translateY(40px); transition:transform .3s ease; }
+  .modal-overlay.open .modal { transform:translateY(0); }
+  .modal-header { position:sticky; top:0; background:var(--ink); color:var(--cream); padding:1.2rem 1.5rem; display:flex; align-items:center; gap:12px; }
+  .modal-avatar { width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:16px; font-weight:700; flex-shrink:0; }
+  .modal-name { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; }
+  .modal-subtitle { font-size:13px; color:rgba(245,240,232,.6); margin-top:2px; }
+  .modal-close { margin-left:auto; background:none; border:none; color:rgba(245,240,232,.6); font-size:22px; cursor:pointer; line-height:1; padding:4px; }
+  .modal-close:hover { color:var(--cream); }
+  .modal-body { padding:1.5rem; }
+  .modal-period-tabs { display:flex; gap:0; border:1px solid var(--border); overflow:hidden; width:fit-content; margin-bottom:1.2rem; flex-wrap:wrap; }
+  .modal-period-tab { padding:6px 14px; font-size:12px; font-family:'DM Sans',sans-serif; cursor:pointer; background:transparent; color:var(--muted); border:none; border-right:1px solid var(--border); transition:all .15s; }
+  .modal-period-tab:last-child { border-right:none; }
+  .modal-period-tab.active { background:var(--ink); color:var(--cream); font-weight:500; }
+  .modal-section-label { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+  .hist-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .hist-item:last-child { border-bottom:none; }
+  .hist-dot { width:8px; height:8px; border-radius:50%; background:var(--rust); flex-shrink:0; }
+  .hist-action { flex:1; font-size:14px; }
+  .hist-date { font-size:12px; color:var(--muted); flex-shrink:0; }
+  .hist-pts { font-size:13px; font-weight:500; color:var(--sage); min-width:50px; text-align:right; flex-shrink:0; }
+  .modal-total { margin-top:1rem; padding:1rem 1.25rem; background:var(--paper); border:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .modal-total-label { font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+  .modal-total-value { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:700; color:var(--rust); }
+  .modal-empty { text-align:center; padding:2rem; color:var(--muted); font-size:14px; }
+
+  .loading { text-align:center; padding:3rem; color:var(--muted); }
+  .dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--rust); margin:0 3px; animation:pulse 1.2s ease-in-out infinite; }
+  .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+  @keyframes pulse { 0%,80%,100%{opacity:.2;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+  .empty { text-align:center; padding:2.5rem; color:var(--muted); font-size:14px; }
+
+  footer { background:var(--paper); border-top:1px solid var(--border); padding:1.5rem 2rem; text-align:center; }
+  .footer-updated { font-size:12px; color:var(--muted); }
+
+  @media(max-width:520px){
+    .stats-row{grid-template-columns:1fr 1fr}
+    .stats-row .stat-card:last-child{grid-column:1/-1}
+    .rank-bar-wrap{display:none}
+    .cta-banner{flex-direction:column;align-items:flex-start}
+    .cta-btn{width:100%;justify-content:center}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Endomarketing</div>
+  <h1>Clube do Livro</h1>
+  <div class="header-sub">Acompanhe sua pontuação e o ranking dos colegas</div>
+  <div class="period-badge" id="header-period">Carregando...</div>
+</header>
+
+<div class="cta-banner">
+  <div class="cta-left">
+    <div class="cta-icon">📬</div>
+    <div>
+      <div class="cta-title">Realizou uma ação do clube?</div>
+      <div class="cta-desc">Registre agora e ganhe seus pontos!</div>
+    </div>
+  </div>
+  <a class="cta-btn" href="https://forms.gle/BJ4AHWvoLSzoypof6" target="_blank">
+    ✏️ Registrar minha ação
+  </a>
+</div>
+
+<div class="container">
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-value" id="stat-part">—</div><div class="stat-label">Participantes</div></div>
+    <div class="stat-card"><div class="stat-value" id="stat-acoes">—</div><div class="stat-label">Ações aprovadas</div></div>
+    <div class="stat-card"><div class="stat-value" id="stat-pts">—</div><div class="stat-label">Pontos distribuídos</div></div>
+  </div>
+
+  <div class="period-tabs" id="period-tabs"></div>
+
+  <div class="anual-banner" id="anual-banner" style="display:none">
+    <div class="anual-icon">🏆</div>
+    <div class="anual-text"><strong>Ranking Anual</strong> — soma de todos os trimestres.<br>Os dados são históricos e nunca são apagados.</div>
+  </div>
+
+  <div class="section-header"><div class="section-title">Pódio</div><div class="section-hint">top 3 do período</div></div>
+  <div class="podium" id="podium"><div class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
+
+  <div class="section-header">
+    <div class="section-title">Ranking completo</div>
+    <div class="section-hint">clique no nome para ver o histórico</div>
+  </div>
+  <div class="ranking-list" id="ranking-list"></div>
+</div>
+
+<footer>
+  <div class="footer-updated" id="footer-updated">Atualizado automaticamente via Google Sheets</div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-avatar" id="modal-avatar"></div>
+      <div>
+        <div class="modal-name" id="modal-name"></div>
+        <div class="modal-subtitle" id="modal-subtitle"></div>
+      </div>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ⚙️  CONFIGURAÇÕES — edite após criar sua planilha
+// ============================================================
+const CONFIG = {
+  // ID da sua planilha Google Sheets (veja no guia como obter)
+  SHEET_ID: '1FlHK0rovcZkndjfo4-SAo44WNcm2ujwNuFk68dyNabQ',
+
+  // Nome exato da aba onde ficam as respostas já com a coluna "Aprovado"
+  // (você vai criar essa aba conforme o guia)
+  SHEET_NAME: 'Aprovacoes',
+
+  // Nomes exatos das colunas na planilha
+  COL_NOME:     'Nome',        // coluna com nome do participante
+  COL_ACAO:     'Ação',        // coluna com a ação realizada
+  COL_DATA:     'Data',        // coluna com a data (formato AAAA-MM-DD)
+  COL_PERIODO:  'Trimestre',   // coluna com o trimestre (T1, T2, T3, T4)
+  COL_APROVADO: 'Aprovado',    // coluna onde você coloca SIM para aprovar
+
+  // Períodos da competição — ajuste as datas conforme seu calendário
+  PERIODOS: [
+    { id:'T1', label:'1º Trimestre', inicio:'2025-01-01', fim:'2025-03-31' },
+    { id:'T2', label:'2º Trimestre', inicio:'2025-04-01', fim:'2025-06-30' },
+    { id:'T3', label:'3º Trimestre', inicio:'2025-07-01', fim:'2025-09-30' },
+    { id:'T4', label:'4º Trimestre', inicio:'2025-10-01', fim:'2025-12-31' },
+    { id:'anual', label:'🏆 Anual' },
+  ],
+};
+
+// ============================================================
+// 🏆  PONTUAÇÃO — deve bater exatamente com as opções do Forms
+// ============================================================
+const PONTOS = {
+  'Participar do encontro presencial':      10,
+  'Ler o livro completo':                   10,
+  'Ler parcialmente':                        5,
+  'Indicar obra no gênero do mês':           5,
+  'Indicação vencedora da votação':         10,
+  'Fazer apresentação/slides':               5,
+  'Criar dinâmica pro encontro':             5,
+  'Emprestar exemplar para colega':          5,
+};
+
+// ============================================================
+// ESTADO
+// ============================================================
+let allData = [];
+let periodoAtivo = null;
+let modalMember = null;
+let modalPeriodo = null;
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  buildPeriodTabs();
+  periodoAtivo = detectPeriodo();
+  setActivePeriod(periodoAtivo);
+  await loadData();
+  setupModal();
+}
+
+function detectPeriodo() {
+  const hoje = new Date().toISOString().split('T')[0];
+  for (const p of CONFIG.PERIODOS) {
+    if (p.id === 'anual') continue;
+    if (hoje >= p.inicio && hoje <= p.fim) return p.id;
+  }
+  return CONFIG.PERIODOS[0].id;
+}
+
+function buildPeriodTabs() {
+  const c = document.getElementById('period-tabs');
+  CONFIG.PERIODOS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'period-tab';
+    btn.textContent = p.label;
+    btn.dataset.id = p.id;
+    btn.onclick = () => setActivePeriod(p.id);
+    c.appendChild(btn);
+  });
+}
+
+function setActivePeriod(id) {
+  periodoAtivo = id;
+  document.querySelectorAll('.period-tab').forEach(b => b.classList.toggle('active', b.dataset.id === id));
+  const p = CONFIG.PERIODOS.find(x => x.id === id);
+  document.getElementById('header-period').textContent = p?.label || id;
+  document.getElementById('anual-banner').style.display = id === 'anual' ? 'flex' : 'none';
+  if (allData.length > 0) renderRanking(allData);
+}
+
+// ============================================================
+// DADOS
+// ============================================================
+async function loadData() {
+  if (CONFIG.SHEET_ID === 'COLE_O_ID_DA_PLANILHA_AQUI') { renderDemo(); return; }
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+    const res = await fetch(url);
+    const csv = await res.text();
+    allData = parseCSV(csv);
+    renderRanking(allData);
+    document.getElementById('footer-updated').textContent =
+      'Atualizado em ' + new Date().toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short' });
+  } catch(e) {
+    document.getElementById('ranking-list').innerHTML =
+      '<div class="empty">Não foi possível carregar os dados.<br>Verifique se a planilha está publicada.</div>';
+  }
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = csvLine(lines[0]).map(h => h.replace(/^"|"$/g,'').trim());
+  return lines.slice(1).map(line => {
+    const vals = csvLine(line);
+    const obj = {};
+    headers.forEach((h,i) => obj[h] = (vals[i]||'').replace(/^"|"$/g,'').trim());
+    return obj;
+  }).filter(r => {
+    const aprovado = (r[CONFIG.COL_APROVADO] || '').toLowerCase();
+    return r[CONFIG.COL_NOME] && r[CONFIG.COL_ACAO] && (aprovado === 'sim' || aprovado === 'yes' || aprovado === 'true');
+  }).map(r => ({
+    nome:    r[CONFIG.COL_NOME],
+    acao:    r[CONFIG.COL_ACAO],
+    data:    r[CONFIG.COL_DATA]    || '',
+    periodo: r[CONFIG.COL_PERIODO] || inferePeriodo(r[CONFIG.COL_DATA]),
+  }));
+}
+
+function csvLine(line) {
+  const res = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i]==='"') { inQ=!inQ; continue; }
+    if (line[i]===',' && !inQ) { res.push(cur); cur=''; continue; }
+    cur += line[i];
+  }
+  res.push(cur); return res;
+}
+
+function inferePeriodo(data) {
+  if (!data) return '';
+  for (const p of CONFIG.PERIODOS) {
+    if (p.id==='anual') continue;
+    if (data >= p.inicio && data <= p.fim) return p.id;
+  }
+  return '';
+}
+
+// ============================================================
+// DEMO (quando SHEET_ID não configurado)
+// ============================================================
+function renderDemo() {
+  allData = [
+    {nome:'Ana Souza',      acao:'Ler o livro completo',              data:'2025-02-10', periodo:'T1'},
+    {nome:'Ana Souza',      acao:'Participar do encontro presencial', data:'2025-02-15', periodo:'T1'},
+    {nome:'Ana Souza',      acao:'Indicar obra no gênero do mês',     data:'2025-03-01', periodo:'T1'},
+    {nome:'Bruno Lima',     acao:'Ler o livro completo',              data:'2025-02-11', periodo:'T1'},
+    {nome:'Bruno Lima',     acao:'Indicar obra no gênero do mês',     data:'2025-02-20', periodo:'T1'},
+    {nome:'Carla Mendes',   acao:'Participar do encontro presencial', data:'2025-02-15', periodo:'T1'},
+    {nome:'Carla Mendes',   acao:'Ler parcialmente',                  data:'2025-02-18', periodo:'T1'},
+    {nome:'Diego Ferreira', acao:'Fazer apresentação/slides',         data:'2025-02-15', periodo:'T1'},
+    {nome:'Diego Ferreira', acao:'Emprestar exemplar para colega',    data:'2025-02-22', periodo:'T1'},
+    {nome:'Elisa Torres',   acao:'Emprestar exemplar para colega',    data:'2025-02-12', periodo:'T1'},
+    {nome:'Felipe Castro',  acao:'Criar dinâmica pro encontro',       data:'2025-02-15', periodo:'T1'},
+    {nome:'Ana Souza',      acao:'Ler o livro completo',              data:'2025-04-10', periodo:'T2'},
+    {nome:'Bruno Lima',     acao:'Participar do encontro presencial', data:'2025-04-15', periodo:'T2'},
+    {nome:'Carla Mendes',   acao:'Indicação vencedora da votação',    data:'2025-04-20', periodo:'T2'},
+  ];
+  renderRanking(allData);
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function filtrar(data, id) {
+  if (id==='anual') return data;
+  return data.filter(r => r.periodo===id || (!r.periodo && inferePeriodo(r.data)===id));
+}
+
+function calcRanking(data) {
+  const map = {};
+  data.forEach(r => {
+    const pts = PONTOS[r.acao] || 0;
+    if (!map[r.nome]) map[r.nome] = {nome:r.nome, pts:0, acoes:0, historico:[]};
+    map[r.nome].pts += pts;
+    map[r.nome].acoes++;
+    map[r.nome].historico.push({acao:r.acao, pts, data:r.data, periodo:r.periodo});
+  });
+  return Object.values(map).sort((a,b) => b.pts-a.pts);
+}
+
+function initials(n) { return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+const CORES = ['#B5451B','#4A6741','#C8943A','#2C5F7A','#7A4A6C','#3D6B5E'];
+function cor(n) { let h=0; for(let i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))&0xFFFFFF; return CORES[Math.abs(h)%CORES.length]; }
+
+function renderRanking(data) {
+  const filtered = filtrar(data, periodoAtivo);
+  const ranking  = calcRanking(filtered);
+  const maxPts   = ranking[0]?.pts || 1;
+
+  document.getElementById('stat-part').textContent  = ranking.length;
+  document.getElementById('stat-acoes').textContent = filtered.length;
+  document.getElementById('stat-pts').textContent   = ranking.reduce((a,r)=>a+r.pts,0);
+
+  // Pódio
+  const podEl = document.getElementById('podium');
+  if (!ranking.length) { podEl.innerHTML='<div class="empty">Nenhum dado para este período.</div>'; }
+  else {
+    const order   = [ranking[1], ranking[0], ranking[2]].filter(Boolean);
+    const classes = ranking[1] ? ['p2','p1','p3'] : ['p1'];
+    podEl.innerHTML = '';
+    order.forEach((m,i) => {
+      const el = document.createElement('div');
+      el.className = `podium-item ${classes[i]}`;
+      el.innerHTML = `
+        <div class="podium-avatar" style="background:${cor(m.nome)}">${initials(m.nome)}</div>
+        <div class="podium-name">${m.nome.split(' ')[0]}</div>
+        <div class="podium-pts">${m.pts} pts</div>
+        <div class="podium-block">${classes[i]==='p1'?'1º':classes[i]==='p2'?'2º':'3º'}</div>`;
+      el.onclick = () => openModal(m);
+      podEl.appendChild(el);
+    });
+  }
+
+  // Lista
+  const listEl = document.getElementById('ranking-list');
+  if (!ranking.length) { listEl.innerHTML='<div class="empty">Nenhuma ação aprovada neste período ainda.</div>'; return; }
+  listEl.innerHTML = '';
+  ranking.forEach((m,i) => {
+    const row = document.createElement('div');
+    row.className = 'ranking-row';
+    row.style.animationDelay = `${i*0.05}s`;
+    row.innerHTML = `
+      <div class="rank-pos">${i+1}º</div>
+      <div class="rank-avatar" style="background:${cor(m.nome)}">${initials(m.nome)}</div>
+      <div class="rank-name-wrap">
+        <div class="rank-name">${m.nome}</div>
+        <div class="rank-actions-count">${m.acoes} ação${m.acoes!==1?'es':''} registrada${m.acoes!==1?'s':''}</div>
+      </div>
+      <div class="rank-bar-wrap">
+        <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${Math.round(m.pts/maxPts*100)}%"></div></div>
+      </div>
+      <div class="rank-pts">${m.pts}<br><span>pontos</span></div>
+      <div class="click-hint">ver histórico →</div>`;
+    row.onclick = () => openModal(m);
+    listEl.appendChild(row);
+  });
+}
+
+// ============================================================
+// MODAL HISTÓRICO
+// ============================================================
+function setupModal() {
+  document.getElementById('modal-close').onclick = closeModal;
+  document.getElementById('modal-overlay').onclick = e => { if(e.target.id==='modal-overlay') closeModal(); };
+  document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+}
+
+function openModal(member) {
+  modalMember  = member;
+  modalPeriodo = periodoAtivo;
+
+  document.getElementById('modal-avatar').textContent   = initials(member.nome);
+  document.getElementById('modal-avatar').style.background = cor(member.nome);
+  document.getElementById('modal-name').textContent     = member.nome;
+  document.getElementById('modal-subtitle').textContent = `${member.pts} pontos · ${member.acoes} ação${member.acoes!==1?'es':''}`;
+
+  renderModalBody(member, periodoAtivo);
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function renderModalBody(member, pid) {
+  const body = document.getElementById('modal-body');
+
+  // Tabs de período dentro do modal (mostra o histórico por trimestre + anual)
+  const tabsHTML = CONFIG.PERIODOS.map(p => `
+    <button class="modal-period-tab ${p.id===pid?'active':''}" data-id="${p.id}">${p.label}</button>
+  `).join('');
+
+  // Filtra histórico do membro pelo período selecionado
+  const hist = member.historico.filter(h => pid==='anual' || h.periodo===pid || (!h.periodo && inferePeriodo(h.data)===pid));
+  const totalPts = hist.reduce((a,h)=>a+h.pts,0);
+  const sorted   = [...hist].sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+
+  const periodoLabel = CONFIG.PERIODOS.find(p=>p.id===pid)?.label || pid;
+
+  body.innerHTML = `
+    <div class="modal-period-tabs" id="modal-period-tabs">${tabsHTML}</div>
+    <div class="modal-section-label">Histórico — ${periodoLabel}</div>
+    ${sorted.length===0
+      ? '<div class="modal-empty">Nenhuma ação registrada neste período.</div>'
+      : sorted.map(h=>`
+          <div class="hist-item">
+            <div class="hist-dot"></div>
+            <div class="hist-action">${h.acao}</div>
+            <div class="hist-date">${fmtDate(h.data)}</div>
+            <div class="hist-pts">+${h.pts} pts</div>
+          </div>`).join('')
+    }
+    ${sorted.length > 0 ? `
+      <div class="modal-total">
+        <div class="modal-total-label">Total no período</div>
+        <div class="modal-total-value">${totalPts} pts</div>
+      </div>` : ''}
+  `;
+
+  body.querySelectorAll('.modal-period-tab').forEach(btn => {
+    btn.onclick = () => renderModalBody(modalMember, btn.dataset.id);
+  });
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  try { const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; } catch { return d; }
+}
+
+init();
+</script>
+</body>
+</html>
